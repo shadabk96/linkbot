@@ -16,6 +16,15 @@ class Link(Base):
     def __repr__(self):
         return "<Link(author='%s', message='%s', link='%s', channel='%s', timestamp='%s')>" % (self.author, self.message, self.link, self.channel, self.timestamp)
 
+class Tag(Base):
+    __tablename__ = 'tags'
+
+    id = Column(Integer, primary_key = True)
+    message_id = Column(Integer)
+    tag = Column(String)
+
+    def __repr__(self):
+        return "<Tag(message_id='%d', tag='%s')>" % (self.message_id, self.tag)
 
 # link1 = Link(author = "shadab", message = "message", link = "www.google.com", channel = "general", timestamp="1234")
 

@@ -5,7 +5,7 @@ import time
 
 from mmpy_bot.bot import listen_to
 from mmpy_bot.bot import respond_to
-from mmpy_bot.plugins.models import Link
+from mmpy_bot.plugins.models import Link, Tag
 from mmpy_bot import session
 
 @listen_to('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
@@ -25,9 +25,22 @@ def link_listen(message):
     print url
     ts = str(time.time())
 
+
+    # extract tags from message
+    # tt = re.findall('tags\s*=\s*\[.*\]', message_text)
+    # tags = []
+    tags = [i[1:]  for i in message_text.split() if i.startswith("#") ]
+    print tags
+
     # store in db
     link = Link(author = author, message = message_text, link = url, channel = channel, timestamp = ts)
     session.add(link)
+    session.flush()
+    if len(tags) != 0:
+        tags_arr = []
+        for tag in tags:
+            tags_arr.append(Tag(message_id = link.id, tag = tag))
+        session.add_all(tags_arr)
     session.commit()
 
     result = session.query(Link).filter(Link.author.in_(['@shadab'])).first()
