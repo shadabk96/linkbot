@@ -196,6 +196,18 @@ class Message(object):
     def get_user_id(self, user_id=None):
         return self.get_user_info('id', user_id)
 
+    def get_teams_of_user(self, user_id=None):
+        teams = self._client.api.get_teams_of_user(user_id)
+        print teams
+
+    def get_teams(self):
+        teams = self._client.api.get_teams()
+        print teams
+
+    def get_channels_for_user(self, user_id, team_id):
+        channels = self._client.api.get_channels_for_user(user_id, team_id)
+        return channels
+
     def get_channel_name(self, channel_id=None):
         channel_id = channel_id or self.channel
         if channel_id in self.channels:

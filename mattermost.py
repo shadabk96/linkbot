@@ -72,6 +72,11 @@ class MattermostAPI(object):
             team_id = self.default_team_id
         return self.get('/users/me/teams/{}/channels'.format(team_id))
 
+    def get_channels_for_user(self, userid=None, team_id=None):
+        if team_id is None:
+            team_id = self.default_team_id
+        return self.get('/users/{}/teams/{}/channels'.format(userid, team_id))
+
     def get_file_link(self, file_id):
         return self.get('/files/{}/link'.format(file_id))
 
@@ -86,6 +91,15 @@ class MattermostAPI(object):
 
     def get_user_info(self, user_id):
         return self.get('/users/{}'.format(user_id))
+
+    def get_teams_of_user(self, user_id):
+        print self.url
+        return self.get('/users/{}/teams'.format(user_id))
+
+    def get_teams(self):
+        response = self.get('/teams')
+        print response
+        return response
 
     def hooks_create(self, **kwargs):
         return self.post(
