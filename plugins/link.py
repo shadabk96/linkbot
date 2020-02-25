@@ -16,8 +16,10 @@ def test_listen(message):
 @listen_to('^testdb$',re.IGNORECASE)
 def test_db(message):
     link_table = session.query(Link).all()
-    message.reply("Printing Link Table")
-    message.reply(pretty_print(link_table))
+    message.reply('Printing Link Table --->\n%s' % pretty_print(link_table))
+
+    tag_table = session.query(Tag).all()
+    message.reply('Printing Tag Table --->\n%s' % pretty_print(tag_table))
 
 @listen_to('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 def link_listen(message):
@@ -54,15 +56,17 @@ def link_listen(message):
         session.add_all(tags_arr)
     session.commit()
 
-    result = session.query(Link).filter(Link.author.in_(['@sumedhkale'])).first()
-    message.reply(result)
-    print result
+    test_db(message)
 
-@listen_to('^links -[1-9]d$')
-@respond_to('^links -[1-9]d$')
+@listen_to('^links .*$')
+@respond_to('^links .*$')
 def get_aggregated_links(message):
-    days = int(re.search('^links -([1-9])d$', message.get_message()).group(1))
+    days = int(re.search('^links --days ([1-9])(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[0])
+    print days
     message.reply('User has asked aggregated link data for %s days' % days)
+
+    tags = re.search('^links --days ([1-9])(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[3]
+    print tags
 
     user_id = message.get_user_id()
     '''
@@ -73,8 +77,13 @@ def get_aggregated_links(message):
     channels = list(map(lambda x: x['name'].encode(), channels))
 
     from_time = str(time.time() - days*86400.00)
-    result = session.query(Link).filter(Link.channel.in_(channels), Link.timestamp>=from_time).all()
 
+    if tags == None:
+        result = session.query(Link).filter(Link.channel.in_(channels), Link.timestamp>=from_time).all()
+    else:
+        tags = tags.split()
+        result = session.query(Link, Tag).filter(Link.id == Tag.message_id, Link.timestamp>=from_time, \
+                                                 Link.channel.in_(channels),  Tag.tag.in_(tags)).all()
     message.reply(pretty_print(result))
 
 def pretty_print(result):

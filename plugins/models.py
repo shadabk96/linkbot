@@ -14,7 +14,7 @@ class Link(Base):
     timestamp = Column(String)
 
     def __repr__(self):
-        return "<Link(author='%s', message='%s', link='%s', channel='%s', timestamp='%s')>" % (self.author, self.message, self.link, self.channel, self.timestamp)
+        return "<Link(id='%d', author='%s', message='%s', link='%s', channel='%s', timestamp='%s')>" % (self.id, self.author, self.message, self.link, self.channel, self.timestamp)
 
 class Tag(Base):
     __tablename__ = 'tags'
