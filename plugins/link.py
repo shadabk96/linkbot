@@ -61,11 +61,10 @@ def link_listen(message):
 @listen_to('^links .*$')
 @respond_to('^links .*$')
 def get_aggregated_links(message):
-    days = int(re.search('^links --days ([1-9])(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[0])
+    days = re.search('^links (--days ([1-9]))?(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[1]
     print days
-    message.reply('User has asked aggregated link data for %s days' % days)
 
-    tags = re.search('^links --days ([1-9])(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[3]
+    tags = re.search('^links (--days ([1-9]))?(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[4]
     print tags
 
     user_id = message.get_user_id()
@@ -76,14 +75,22 @@ def get_aggregated_links(message):
     channels = message.get_channels_for_user(user_id, '9gf4wftn13rzbc75ojq37hj95o')
     channels = list(map(lambda x: x['name'].encode(), channels))
 
-    from_time = str(time.time() - days*86400.00)
-
-    if tags == None:
-        result = session.query(Link).filter(Link.channel.in_(channels), Link.timestamp>=from_time).all()
-    else:
-        tags = tags.split()
+    if tags and days:
+        from_time = str(time.time() - int(days) * 86400.00)
+        tags = tags.encode().split()
+        message.reply('User has asked Link data for %s days and Tags in %s' % (int(days), tags))
         result = session.query(Link, Tag).filter(Link.id == Tag.message_id, Link.timestamp>=from_time, \
                                                  Link.channel.in_(channels),  Tag.tag.in_(tags)).all()
+    elif days and not tags:
+        from_time = str(time.time() - int(days) * 86400.00)
+        message.reply('User has asked Link data for %s days' % (days))
+        result = session.query(Link).filter(Link.channel.in_(channels), Link.timestamp >= from_time).all()
+    elif not days and tags:
+        tags = tags.encode().split()
+        message.reply('User has asked Link data with Tags in %s' % (tags))
+        result = session.query(Link, Tag).filter(Link.id == Tag.message_id, \
+                                                 Link.channel.in_(channels), Tag.tag.in_(tags)).all()
+
     message.reply(pretty_print(result))
 
 def pretty_print(result):
