@@ -26,6 +26,16 @@ class Tag(Base):
     def __repr__(self):
         return "<Tag(message_id='%d', tag='%s')>" % (self.message_id, self.tag)
 
+class BotSubscriber(Base):
+    __tablename__ = 'bot_subcriber'
+
+    id = Column(Integer, primary_key = True)
+    user_id = Column(String)
+    team_id = Column(String)
+
+    def __repr__(self):
+        return "<BotSubcriber(user_id='%s', team_id='%s')>" % (self.user_id, self.team_id)
+
 # link1 = Link(author = "shadab", message = "message", link = "www.google.com", channel = "general", timestamp="1234")
 
 # session.add(link1)

@@ -29,7 +29,7 @@ class Bot(object):
             settings.BOT_LOGIN, settings.BOT_PASSWORD,
             settings.SSL_VERIFY, settings.BOT_TOKEN,
             settings.WS_ORIGIN)
-        logger.info('connected to mattermost')
+        logger.info('#### Connected to Mattermost ####')
         self._plugins = PluginsManager()
         self._dispatcher = MessageDispatcher(self._client, self._plugins)
 
