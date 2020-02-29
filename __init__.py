@@ -9,7 +9,7 @@ database_uri = config.DATABASE_URI
 def get_version():
     return '.'.join(map(str, VERSION))
 
-engine = create_engine(database_uri, connect_args={'check_same_thread': False}, echo = True)
+engine = create_engine(database_uri, connect_args={'check_same_thread': False}, echo = False)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)

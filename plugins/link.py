@@ -2,13 +2,13 @@
 import logging
 import re
 import time
-
-from mmpy_bot.bot import listen_to
-from mmpy_bot.bot import respond_to
+from mmpy_bot import session, settings
+from mmpy_bot.bot import listen_to, respond_to
 from mmpy_bot.plugins.models import Link, Tag, BotSubscriber
-from mmpy_bot import session
 from mmpy_bot.scheduler import schedule
+from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
 
+logging.getLogger('schedule').propagate = False
 logger = logging.getLogger(__name__)
 
 @listen_to('^test$', re.IGNORECASE)
@@ -33,11 +33,7 @@ def link_listen(message):
     author = message._get_sender_name()
     channel = message.get_channel_name()
     message_text = message.get_message()
-    print "author " + author
-    print "channel " + channel
-    print "message_text " + message_text
-    print message
-    message.reply('link reached')
+    logger.info('Params: Author = %s, channel = %s, Message = %s' % (author, channel, message_text))
 
     # extract link from message
     url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message_text)[0]
@@ -49,7 +45,6 @@ def link_listen(message):
     # tt = re.findall('tags\s*=\s*\[.*\]', message_text)
     # tags = []
     tags = [i[1:]  for i in message_text.split() if i.startswith("#") ]
-    print tags
 
     # store in db
     link = Link(author = author, message = message_text, link = url, channel = channel, timestamp = ts)
@@ -62,11 +57,9 @@ def link_listen(message):
         session.add_all(tags_arr)
     session.commit()
 
-    # test_db(message)
-
 @listen_to('^links .*$')
 @respond_to('^links .*$')
-def get_aggregated_links(message, userId=None, teamId=None):
+def get_aggregated_links(message, userId=None, teamId=None, channelId=None):
     days, tags, channels = populate_params(message, userId, teamId)
     result = populate_link_data(days, tags, channels, message)
     if result == []:
@@ -75,7 +68,7 @@ def get_aggregated_links(message, userId=None, teamId=None):
         else:
             message.reply("Unable to find Links matching your criteria :| Please try changing your search criteria!")
         return
-    message_response(message, pretty_print(result))
+    message_response(message, pretty_print(result), channelId)
 
 
 @listen_to('^subscribe$')
@@ -90,10 +83,9 @@ def subscribe_links_summary(message):
         return
 
     # scheduled link aggregation
-    schedule.every(10).seconds.do(get_aggregated_links, message).tag(userId)
+    schedule.every(SCHEDULED_UPDATE_TIME_INTERVAL).seconds.do(get_aggregated_links, message).tag(userId)
 
-
-    botSubcriber = BotSubscriber(user_id=userId, team_id=message.get_teams_of_user(userId)[0][u'id'])
+    botSubcriber = BotSubscriber(user_id=userId, team_id=message.get_teams_of_user(userId)[0][u'id'], channel_id=message.channel)
     session.add(botSubcriber)
     session.flush()
     session.commit()
@@ -119,12 +111,9 @@ def unsubscribe_links_summary(message):
     message.reply("You have been successfully unsubscribed!")
 
 def populate_params(message, userId=None, teamId=None):
-
-    if userId and teamId:
-        pass
-    else:
-        days, tags = None, None
-        if message.get_message() != 'subscribe':
+    days, tags = None, None
+    if message._body:
+        if 'links' in message.get_message():
             days = re.search('^links (--days ([1-9]))?(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[1]
             print days
 
@@ -132,10 +121,12 @@ def populate_params(message, userId=None, teamId=None):
             print tags
 
             userId = message.get_user_info('id')
-        else:
+        elif message.get_message() == 'subscribe':
             userId = message.get_user_info('id', 'me')
             print(userId)
             days = 7
+    else:
+        days = 7
     '''
     Finding the team_id is still pending. Find and replace your local team_id instead of the 
     second parameter in the get_channels_for_user() below
@@ -146,12 +137,11 @@ def populate_params(message, userId=None, teamId=None):
     logger.info("Aggregation Params: Days = %s, Tags = %r, userId = %s, Channels = %r", days, tags, userId, channels)
     return days, tags, channels
 
-def message_response(message, response):
-    # if message.get_message() != 'subscribe':
-    #     message.reply(response)
-    # else:
-    #     message.send(response, 'ey4ezt3gabdr9mufk5r13p769r')
-    message.reply(response)
+def message_response(message, response, channelId=None):
+    if message._body:
+        message.reply(response)
+    else:
+        message.send(response, channelId)
 
 def populate_link_data(days, tags, channels, message):
     if tags and days:

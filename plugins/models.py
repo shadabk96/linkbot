@@ -32,9 +32,10 @@ class BotSubscriber(Base):
     id = Column(Integer, primary_key = True)
     user_id = Column(String)
     team_id = Column(String)
+    channel_id = Column(String)
 
     def __repr__(self):
-        return "<BotSubcriber(user_id='%s', team_id='%s')>" % (self.user_id, self.team_id)
+        return "<BotSubcriber(user_id='%s', team_id='%s', channel_id='%s')>" % (self.user_id, self.team_id, self.channel_id)
 
 # link1 = Link(author = "shadab", message = "message", link = "www.google.com", channel = "general", timestamp="1234")
 

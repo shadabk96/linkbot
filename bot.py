@@ -13,10 +13,15 @@ from glob import glob
 from six.moves import _thread
 
 from mmpy_bot import settings
-from mmpy_bot.dispatcher import MessageDispatcher
+from mmpy_bot.dispatcher import MessageDispatcher, Message
 from mmpy_bot.mattermost import MattermostClient
 from mmpy_bot.scheduler import schedule
 
+from mmpy_bot import session
+from mmpy_bot.plugins.models import BotSubscriber
+from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
+
+logging.getLogger('schedule').propagate = False
 logger = logging.getLogger(__name__)
 
 
@@ -38,6 +43,7 @@ class Bot(object):
         self._dispatcher.start()
         _thread.start_new_thread(self._keep_active, tuple())
         _thread.start_new_thread(self._run_jobs, tuple())
+        self.run_scheduled_update_jobs()
         self._dispatcher.loop()
 
     def _keep_active(self):
@@ -51,6 +57,15 @@ class Bot(object):
         while True:
             time.sleep(settings.JOB_TRIGGER_PERIOD)
             schedule.run_pending()
+
+    def run_scheduled_update_jobs(self):
+        from mmpy_bot.plugins.link import get_aggregated_links
+        result = session.query(BotSubscriber).all()
+        if result == []:
+            return
+        for row in result:
+            schedule.every(SCHEDULED_UPDATE_TIME_INTERVAL).seconds.do(get_aggregated_links, \
+            Message(self._client, None, None), row.user_id, row.team_id, row.channel_id).tag(row.user_id)
 
 
 class PluginsManager(object):

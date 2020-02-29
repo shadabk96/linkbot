@@ -13,12 +13,6 @@ from six import iteritems
 from mmpy_bot.utils import WorkerPool
 from mmpy_bot import settings
 
-'''
-from mmpy_bot import session
-from mmpy_bot.plugins.models import BotSubscriber
-from mmpy_bot.plugins.link import get_aggregated_links
-from mmpy_bot.scheduler import schedule
-'''
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +128,6 @@ class MessageDispatcher(object):
                     self.event['data'][item])
 
     def loop(self):
-        # self.run_subscribed_users_jobs()
         for self.event in \
             self._client.messages(True, ['posted', 'added_to_team',
                                          'leave_team', 'user_added',
@@ -142,15 +135,6 @@ class MessageDispatcher(object):
             if self.event:
                 self.load_json()
                 self._on_new_message(self.event)
-    '''
-    def run_subscribed_users_jobs(self):
-        result = session.query(BotSubscriber).all()
-        if result == []:
-            return
-        logger.info('userid = %s' % result[0].user_id)
-        # for row in result:
-        #     schedule.every(10).seconds.do(get_aggregated_links, message).tag(userId).
-    '''
 
     def _default_reply(self, msg):
         if settings.DEFAULT_REPLY:
