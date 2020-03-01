@@ -38,6 +38,29 @@ SSL_VERIFY = False
 
 ## Demo
 
-![Days demo](demo/days.gif)
+* Test message
+![Test](demo/days.gif)
+
+* Search using --days option
+![Days search](demo/days.gif)
+
+* Search using --tags option
+![Tags search](demo/tags.gif)
+
+* Linkbot entries reflected in [UI plugin](https://github.com/shadabk96/mattermost-linkbot-plugin)
+![UI demo](demo/ui-plugin.gif)
+
+* Populated sidebar UI plugin 
+![Sidebar](demo/sidebar.gif)
+
+* Subscribe and unsubscribe demo
+![Subscribe](demo/subs.gif)
+
+## Authors
+
+* Shadab Khan - [Github](https://github.com/shadabk96) | [LinkedIn](https://www.linkedin.com/in/shadabk96/)
+* Sumedh Kale - [Github](https://github.com/sumedhkale) | [LinkedIn](https://www.linkedin.com/in/sumedh-kale/)
+
+---
 
 Special thanks to [mmpy_bot](https://github.com/attzonko/mmpy_bot)
