@@ -37,3 +37,6 @@ SSL_VERIFY = False
 * Run the cli.py file by typing `python cli.py`
 * Open mattermost instance and send a personal message 'test' to the bot. The bot should reply "Hello" with your username.
 
+## Demo
+
+![Days demo](demo/days.gif)
