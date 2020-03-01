@@ -5,20 +5,20 @@ import os
 DEBUG = False
 
 PLUGINS = [
-    'mmpy_bot.plugins',
+    'linkbot.plugins',
 ]
 PLUGINS_ONLY_DOC_STRING = False
 
 # Default settings
 MATTERMOST_API_VERSION = 4
-BOT_URL = 'http://mm.example.com/api/v4'
-BOT_LOGIN = 'bot@example.com'
-BOT_PASSWORD = None
-BOT_TOKEN = None
-BOT_TEAM = 'devops'
-SSL_VERIFY = True
+BOT_URL = 'http://localhost:8065/api/v4'
+# BOT_LOGIN = 'bot@example.com'
+# BOT_PASSWORD = None
+BOT_TOKEN = "y8aej34o5pnjjbx6cmapxuqpfo"
+BOT_TEAM = 'hack20'
+SSL_VERIFY = False
 WS_ORIGIN = None
-WEBHOOK_ID = None  # if not specified mmpy_bot will attempt to create one
+WEBHOOK_ID = None  # if not specified linkbot will attempt to create one
 
 IGNORE_NOTIFIES = ['@here', '@channel', '@all']
 IGNORE_USERS = []
@@ -38,7 +38,7 @@ the used icon comes from bot settings and Icon or Emoji has no effect.
 
 """
 Period to trigger jobs in sechduler. Measures in seconds.
-If JOB_TRIGGER_PERIOD is not set, mmpy_bot will set default priod 5 seconds.
+If JOB_TRIGGER_PERIOD is not set, linkbot will set default priod 5 seconds.
 """
 JOB_TRIGGER_PERIOD = 5
 
@@ -63,7 +63,7 @@ if settings_module is not None:
         exec(open(filename, encoding='utf-8').read())
 
 try:
-    from mmpy_bot_settings import *  # noqa: F401, F403
+    from linkbot_settings import *  # noqa: F401, F403
 except ImportError:
     try:
         from local_settings import *  # noqa: F401, F403

@@ -10,8 +10,8 @@ import re
 
 from six import iteritems
 
-from mmpy_bot.utils import WorkerPool
-from mmpy_bot import settings
+from linkbot.utils import WorkerPool
+from linkbot import settings
 
 
 logger = logging.getLogger(__name__)
@@ -174,7 +174,7 @@ class Message(object):
     channels = {}
 
     def __init__(self, client, body, pool):
-        from mmpy_bot.bot import PluginsManager
+        from linkbot.bot import PluginsManager
 
         self._plugins = PluginsManager()
         self._client = client
