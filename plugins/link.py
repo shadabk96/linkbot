@@ -9,9 +9,10 @@ from mmpy_bot.scheduler import schedule, catch_exceptions
 from mmpy_bot.utils import allow_only_direct_message
 from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
 from mmpy_bot.plugins.link_models import Link, Tag, BotSubscriber
-from mmpy_bot.plugins.link_utils import populate_params, message_response, populate_link_data, pretty_print
+from mmpy_bot.plugins.link_utils import populate_params, message_response, populate_link_data, pretty_print, pretty_print_table
 
 logger = logging.getLogger(__name__)
+
 
 @respond_to('^test$', re.IGNORECASE)
 def test_listen(message):
@@ -22,11 +23,11 @@ def test_listen(message):
 @allow_only_direct_message()
 def test_db(message):
     link_table = session.query(Link).all()
-    message.reply('Printing Link Table --->\n%s' % pretty_print(link_table))
+    message.reply('**Printing Link Table - **\n%s' % pretty_print_table(link_table))
     tag_table = session.query(Tag).all()
-    message.reply('Printing Tag Table --->\n%s' % pretty_print(tag_table))
+    message.reply('**Printing Tag Table - **\n%s' % pretty_print_table(tag_table))
     bot_subscriber_table = session.query(BotSubscriber).all()
-    message.reply('Printing BotSubscriber Table --->\n%s' % pretty_print(bot_subscriber_table))
+    message.reply('**Printing BotSubscriber Table - **\n%s' % pretty_print_table(bot_subscriber_table))
 
 
 @listen_to('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
@@ -65,8 +66,12 @@ def get_aggregated_links(message, userId=None, teamId=None, channelId=None):
             message.reply('There have been no posts for the past 7 days :| Please wait for the next update!')
         else:
             message.reply("Unable to find Links matching your criteria :| Please try changing your search criteria!")
-        return
-    message_response(message, pretty_print(result), channelId)
+    else:
+        scheduled_update = True
+        if message._body:
+            scheduled_update = False
+        message_response(message, pretty_print(result, scheduled_update), channelId)
+    logger.info("Bot Log : Function=get_aggregated_links() - aggregated link updates based on filter criteria")
 
 
 @respond_to('^subscribe$', re.IGNORECASE)
@@ -93,11 +98,13 @@ def subscribe_links_summary(message):
     # scheduled link aggregation
     schedule.every(SCHEDULED_UPDATE_TIME_INTERVAL).seconds.do(get_aggregated_links, message).tag(userId)
 
-    botSubcriber = BotSubscriber(user_id=userId, team_id=message.get_teams_of_user(userId)[0][u'id'], channel_id=message.channel)
+    botSubcriber = BotSubscriber(user_id=userId, team_id=message.get_teams_of_user(userId)[0][u'id'], \
+                                 channel_id=message.channel)
     session.add(botSubcriber)
     session.flush()
     session.commit()
     message.reply("Successfully subscribed for my updates! Wait for the next update! :)")
+    logger.info("Bot Log : Function=subscribe_links_summary() - user subscribed from scheduled link updates")
 
 
 @respond_to('^unsubscribe$', re.IGNORECASE)
@@ -117,7 +124,8 @@ def unsubscribe_links_summary(message):
 
     session.query(BotSubscriber).filter(BotSubscriber.user_id == jobTag).delete()
     session.commit()
-    message.reply("You have been successfully unsubscribed!")
+    message.reply("You have been successfully unsubscribed! :)")
+    logger.info("Bot Log : Function=unsubscribe_links_summary() - user unsubscribed from scheduled link updates")
 
 
 test_listen.__doc__ = link_constants.TEST_LISTEN_DOC

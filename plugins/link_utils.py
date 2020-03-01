@@ -51,5 +51,49 @@ def message_response(message, response, channelId=None):
         message.send(response, channelId)
 
 
-def pretty_print(result):
+def pretty_print(result, scheduled_update):
+    link, tag, botsubscriber, sqa_collection = find_result_type(result)
+    if sqa_collection:
+        result_dict = {}
+        for link, tag in result:
+            if link in result_dict:
+                result_dict[link].append('#' + tag.tag.encode())
+            else:
+                result_dict[link] = ['#' + tag.tag.encode()]
+
+        result_string = '#### Here are the results matching your search criteria - \n'
+        for link, tags in result_dict.iteritems():
+            result_string += '**Message:** %s\n**Link:** %s\n**Hashtags:** %s\n**Sent by:** %s\n**Sent on:** %s' % (
+            link.message, link.link, ' '.join(map(str, tags)), link.author,
+            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(link.timestamp))))
+            result_string += '\n                                             \n'
+        return result_string
+    else:
+        if scheduled_update:
+            result_string = '#### Here is your scheduled Link update - \n'
+        else:
+            result_string = '#### Here are the results matching your search criteria - \n'
+        for link in result:
+            result_string += '**Message:** %s\n**Link:** %s\n**Sent by:** %s\n**Sent on:** %s' % (
+            link.message, link.link, link.author,
+            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(link.timestamp))))
+            result_string += '\n                                             \n'
+
+    return result_string
+
+
+def pretty_print_table(result):
     return "\n".join(map(str, result))
+
+
+def find_result_type(result):
+    link, tag, botsubscriber, sqa_collection = False, False, False, False
+    if isinstance(result[0], Link):
+        link = True
+    elif isinstance(result[0], Tag):
+        tag = True
+    elif isinstance(result[0], BotSubscriber):
+        botsubscriber = True
+    else:
+        sqa_collection = True
+    return link, tag, botsubscriber, sqa_collection
