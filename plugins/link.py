@@ -85,6 +85,8 @@ def subscribe_links_summary(message):
     For production, Link aggregation update can be scheduled every day at 10:00 AM by setting
      - schedule.every().day().at("10:00").do(get_aggregated_links, message).tag(userId)
 
+    This functionality can be extended to support periodic scheduling for daily/weekly/monthly time period.
+
     Above changes also need to be reflected in 'run_scheduled_update_jobs()' function in 'bot.bot' module
     '''
     userId = message.get_user_id()
