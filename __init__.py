@@ -1,8 +1,8 @@
 VERSION = (1, 3, 4)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from mmpy_bot.plugins.link_models import Base
-from mmpy_bot import config
+from linkbot.plugins.link_models import Base
+from linkbot import config
 
 database_uri = config.DATABASE_URI
 

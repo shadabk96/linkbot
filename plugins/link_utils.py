@@ -1,9 +1,9 @@
 import re
 import logging
 import time
-from mmpy_bot import session
-from mmpy_bot.plugins.link_models import Link, Tag, BotSubscriber
-from mmpy_bot.bot_constants import SCHEDULED_UPDATE_NUMBER_OF_DAYS
+from linkbot import session
+from linkbot.plugins.link_models import Link, Tag, BotSubscriber
+from linkbot.bot_constants import SCHEDULED_UPDATE_NUMBER_OF_DAYS
 
 logger = logging.getLogger(__name__)
 

@@ -3,6 +3,7 @@ import logging
 import re
 import time
 import link_constants
+<<<<<<< Updated upstream
 from mmpy_bot import session, settings
 from mmpy_bot.bot import listen_to, respond_to
 from mmpy_bot.scheduler import schedule, catch_exceptions
@@ -10,6 +11,15 @@ from mmpy_bot.utils import allow_only_direct_message
 from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
 from mmpy_bot.plugins.link_models import Link, Tag, BotSubscriber
 from mmpy_bot.plugins.link_utils import populate_params, message_response, populate_link_data, pretty_print, pretty_print_table
+=======
+from linkbot import session, settings
+from linkbot.bot import listen_to, respond_to
+from linkbot.scheduler import schedule, catch_exceptions
+from linkbot.utils import allow_only_direct_message
+from linkbot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
+from linkbot.plugins.link_models import Link, Tag, BotSubscriber
+from linkbot.plugins.link_utils import populate_params, message_response, populate_link_data, pretty_print
+>>>>>>> Stashed changes
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +53,9 @@ def link_listen(message):
     ts = str(time.time())
 
     tags = [i[1:]  for i in message_text.split() if i.startswith("#") ]
+
+    # clean message
+    message_text = message_text.replace(url, "")
 
     # store in db
     link = Link(author = author, message = message_text, link = url, channel = channel, timestamp = ts)

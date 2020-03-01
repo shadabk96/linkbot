@@ -12,14 +12,14 @@ from glob import glob
 
 from six.moves import _thread
 
-from mmpy_bot import settings
-from mmpy_bot.dispatcher import MessageDispatcher, Message
-from mmpy_bot.mattermost import MattermostClient
-from mmpy_bot.scheduler import schedule
+from linkbot import settings
+from linkbot.dispatcher import MessageDispatcher, Message
+from linkbot.mattermost import MattermostClient
+from linkbot.scheduler import schedule
 
-from mmpy_bot import session
-from mmpy_bot.plugins.link_models import BotSubscriber
-from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
+from linkbot import session
+from linkbot.plugins.link_models import BotSubscriber
+from linkbot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
 
 logging.getLogger('schedule').propagate = False
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 class Bot(object):
     def __init__(self):
         if settings.MATTERMOST_API_VERSION < 4:
-            raise ValueError('mmpy-bot only supports API Version 4+')
+            raise ValueError('linkbot only supports API Version 4+')
         self._client = MattermostClient(
             settings.BOT_URL, settings.BOT_TEAM,
             settings.BOT_LOGIN, settings.BOT_PASSWORD,
@@ -69,7 +69,7 @@ class Bot(object):
 
         Above changes also need to be reflected in 'subscribe_links_summary()' function in 'bot.plugins.link' module
         '''
-        from mmpy_bot.plugins.link import get_aggregated_links
+        from linkbot.plugins.link import get_aggregated_links
         result = session.query(BotSubscriber).all()
         if result == []:
             return
@@ -92,7 +92,7 @@ class PluginsManager(object):
             if hasattr(settings, 'PLUGINS'):
                 self.plugins = settings.PLUGINS
             if self.plugins == []:
-                self.plugins.append('mmpy_bot.plugins')
+                self.plugins.append('linkbot.plugins')
 
         for plugin in self.plugins:
             self._load_plugins(plugin)
