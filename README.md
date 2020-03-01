@@ -39,7 +39,7 @@ SSL_VERIFY = False
 ## Demo
 
 * Test message
-![Test](demo/days.gif)
+![Test](demo/test.gif)
 
 * Search using --days option
 ![Days search](demo/days.gif)
@@ -50,7 +50,7 @@ SSL_VERIFY = False
 * Linkbot entries reflected in [UI plugin](https://github.com/shadabk96/mattermost-linkbot-plugin)
 ![UI demo](demo/ui-plugin.gif)
 
-* Populated sidebar UI plugin 
+* Populated sidebar UI plugin  
 ![Sidebar](demo/sidebar.gif)
 
 * Subscribe and unsubscribe demo
