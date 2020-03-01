@@ -19,10 +19,10 @@
 * Clone this repository.
 * Create a .env file in cloned directory with following lines
 ```
-COFFEEBOT_DATABASE_FILENAME=sqlite.db
+DATABASE_FILENAME=sqlite.db
 ```
 * Create a new bot account from system console.
-* Open settings.py and edit following parameters
+* Open settings.py and edit following parameters. Bot token can be fetched from system console. ([Help](https://docs.mattermost.com/developer/bot-accounts.html))
 ```
 MATTERMOST_API_VERSION = 4
 BOT_URL = 'http://localhost:8065/api/v4'
@@ -30,7 +30,6 @@ BOT_TOKEN = ""
 BOT_TEAM = ''
 SSL_VERIFY = False
 ```
-    * Bot token can be fetched from system console. ([Help](https://docs.mattermost.com/developer/bot-accounts.html))
 
 ## Run the bot
 
@@ -40,3 +39,5 @@ SSL_VERIFY = False
 ## Demo
 
 ![Days demo](demo/days.gif)
+
+Special thanks to [mmpy_bot](https://github.com/attzonko/mmpy_bot)
