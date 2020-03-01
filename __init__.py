@@ -1,7 +1,7 @@
 VERSION = (1, 3, 4)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from mmpy_bot.plugins.models import Base
+from mmpy_bot.plugins.link_models import Base
 from mmpy_bot import config
 
 database_uri = config.DATABASE_URI
@@ -15,4 +15,4 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-print "database done"
+print "--> Database Created Successfully"

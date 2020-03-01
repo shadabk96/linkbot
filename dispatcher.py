@@ -203,7 +203,7 @@ class Message(object):
 
     def get_teams(self):
         teams = self._client.api.get_teams()
-        print teams
+        return teams
 
     def get_channels_for_user(self, user_id, team_id):
         channels = self._client.api.get_channels_for_user(user_id, team_id)

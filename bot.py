@@ -18,7 +18,7 @@ from mmpy_bot.mattermost import MattermostClient
 from mmpy_bot.scheduler import schedule
 
 from mmpy_bot import session
-from mmpy_bot.plugins.models import BotSubscriber
+from mmpy_bot.plugins.link_models import BotSubscriber
 from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
 
 logging.getLogger('schedule').propagate = False
@@ -59,6 +59,16 @@ class Bot(object):
             schedule.run_pending()
 
     def run_scheduled_update_jobs(self):
+        '''
+        Triggers link aggregation update for already subscribed users
+        Currently Link aggregation update is scheduled for every 30 seconds for testing purposes
+         - schedule.every(SCHEDULED_UPDATE_TIME_INTERVAL).seconds.do(get_aggregated_links, message).tag(userId)
+
+        For production, Link aggregation update can be scheduled every day at 10:00 AM by setting
+         - schedule.every().day().at("10:00").do(get_aggregated_links, message).tag(userId)
+
+        Above changes also need to be reflected in 'subscribe_links_summary()' function in 'bot.plugins.link' module
+        '''
         from mmpy_bot.plugins.link import get_aggregated_links
         result = session.query(BotSubscriber).all()
         if result == []:

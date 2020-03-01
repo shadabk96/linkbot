@@ -93,12 +93,10 @@ class MattermostAPI(object):
         return self.get('/users/{}'.format(user_id))
 
     def get_teams_of_user(self, user_id):
-        print self.url
         return self.get('/users/{}/teams'.format(user_id))
 
     def get_teams(self):
         response = self.get('/teams')
-        print response
         return response
 
     def hooks_create(self, **kwargs):

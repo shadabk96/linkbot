@@ -2,23 +2,24 @@
 import logging
 import re
 import time
+import link_constants
 from mmpy_bot import session, settings
 from mmpy_bot.bot import listen_to, respond_to
-from mmpy_bot.plugins.models import Link, Tag, BotSubscriber
-from mmpy_bot.scheduler import schedule
+from mmpy_bot.scheduler import schedule, catch_exceptions
+from mmpy_bot.utils import allow_only_direct_message
 from mmpy_bot.bot_constants import SCHEDULED_UPDATE_TIME_INTERVAL
+from mmpy_bot.plugins.link_models import Link, Tag, BotSubscriber
+from mmpy_bot.plugins.link_utils import populate_params, message_response, populate_link_data, pretty_print
 
-logging.getLogger('schedule').propagate = False
 logger = logging.getLogger(__name__)
 
-@listen_to('^test$', re.IGNORECASE)
 @respond_to('^test$', re.IGNORECASE)
 def test_listen(message):
-    message.reply("test reached 1")
-    message.reply("test reached 2")
+    message.reply("Hello %s! Test successful" % message.get_username())
 
-@listen_to('^testdb$',re.IGNORECASE)
-@respond_to('^testdb$$')
+
+@respond_to('^testdb$$', re.IGNORECASE)
+@allow_only_direct_message()
 def test_db(message):
     link_table = session.query(Link).all()
     message.reply('Printing Link Table --->\n%s' % pretty_print(link_table))
@@ -26,6 +27,7 @@ def test_db(message):
     message.reply('Printing Tag Table --->\n%s' % pretty_print(tag_table))
     bot_subscriber_table = session.query(BotSubscriber).all()
     message.reply('Printing BotSubscriber Table --->\n%s' % pretty_print(bot_subscriber_table))
+
 
 @listen_to('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 def link_listen(message):
@@ -37,13 +39,8 @@ def link_listen(message):
 
     # extract link from message
     url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message_text)[0]
-    print url
     ts = str(time.time())
 
-
-    # extract tags from message
-    # tt = re.findall('tags\s*=\s*\[.*\]', message_text)
-    # tags = []
     tags = [i[1:]  for i in message_text.split() if i.startswith("#") ]
 
     # store in db
@@ -57,8 +54,9 @@ def link_listen(message):
         session.add_all(tags_arr)
     session.commit()
 
-@listen_to('^links .*$')
+
 @respond_to('^links .*$')
+@catch_exceptions(cancel_on_failure=True)
 def get_aggregated_links(message, userId=None, teamId=None, channelId=None):
     days, tags, channels = populate_params(message, userId, teamId)
     result = populate_link_data(days, tags, channels, message)
@@ -71,9 +69,19 @@ def get_aggregated_links(message, userId=None, teamId=None, channelId=None):
     message_response(message, pretty_print(result), channelId)
 
 
-@listen_to('^subscribe$')
-@respond_to('^subscribe$')
+@respond_to('^subscribe$', re.IGNORECASE)
+@allow_only_direct_message()
 def subscribe_links_summary(message):
+    '''
+    Subscribes sender of message of Link aggregation scheduled update by the bot
+    Currently Link aggregation update is scheduled for every 30 seconds for testing purposes
+     - schedule.every(SCHEDULED_UPDATE_TIME_INTERVAL).seconds.do(get_aggregated_links, message).tag(userId)
+
+    For production, Link aggregation update can be scheduled every day at 10:00 AM by setting
+     - schedule.every().day().at("10:00").do(get_aggregated_links, message).tag(userId)
+
+    Above changes also need to be reflected in 'run_scheduled_update_jobs()' function in 'bot.bot' module
+    '''
     userId = message.get_user_id()
 
     alreadyBotSubscribed = session.query(BotSubscriber).filter(BotSubscriber.user_id == userId).all()
@@ -91,8 +99,9 @@ def subscribe_links_summary(message):
     session.commit()
     message.reply("Successfully subscribed for my updates! Wait for the next update! :)")
 
-@listen_to('^unsubscribe$')
-@respond_to('^unsubscribe$')
+
+@respond_to('^unsubscribe$', re.IGNORECASE)
+@allow_only_direct_message()
 def unsubscribe_links_summary(message):
 
     jobTag = message.get_user_id()
@@ -110,53 +119,10 @@ def unsubscribe_links_summary(message):
     session.commit()
     message.reply("You have been successfully unsubscribed!")
 
-def populate_params(message, userId=None, teamId=None):
-    days, tags = None, None
-    if message._body:
-        if 'links' in message.get_message():
-            days = re.search('^links (--days ([1-9]))?(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[1]
-            print days
 
-            tags = re.search('^links (--days ([1-9]))?(\s*)(--tags ([\w\s]+))?$', message.get_message()).groups()[4]
-            print tags
-
-            userId = message.get_user_info('id')
-        elif message.get_message() == 'subscribe':
-            userId = message.get_user_info('id', 'me')
-            print(userId)
-            days = 7
-    else:
-        days = 7
-    '''
-    Finding the team_id is still pending. Find and replace your local team_id instead of the 
-    second parameter in the get_channels_for_user() below
-    '''
-    channels = message.get_channels_for_user(userId, teamId or message.get_teams_of_user(userId)[0][u'id'])
-    channels = list(map(lambda x: x['name'].encode(), channels))
-
-    logger.info("Aggregation Params: Days = %s, Tags = %r, userId = %s, Channels = %r", days, tags, userId, channels)
-    return days, tags, channels
-
-def message_response(message, response, channelId=None):
-    if message._body:
-        message.reply(response)
-    else:
-        message.send(response, channelId)
-
-def populate_link_data(days, tags, channels, message):
-    if tags and days:
-        from_time = str(time.time() - int(days) * 86400.00)
-        tags = tags.encode().split()
-        result = session.query(Link, Tag).filter(Link.id == Tag.message_id, Link.timestamp>=from_time, \
-                                                 Link.channel.in_(channels),  Tag.tag.in_(tags)).all()
-    elif days and not tags:
-        from_time = str(time.time() - int(days) * 86400.00)
-        result = session.query(Link).filter(Link.timestamp>=from_time, Link.channel.in_(channels)).all()
-    elif not days and tags:
-        tags = tags.encode().split()
-        result = session.query(Link, Tag).filter(Link.id == Tag.message_id, \
-                                                 Link.channel.in_(channels), Tag.tag.in_(tags)).all()
-    return result
-
-def pretty_print(result):
-    return "\n".join(map(str, result))
+test_listen.__doc__ = link_constants.TEST_LISTEN_DOC
+test_db.__doc__ = link_constants.TEST_DB_DOC
+link_listen.__doc__ = link_constants.LINK_LISTEN_DOC
+get_aggregated_links.__doc__ = link_constants.LINK_AGGREGATION_DOC
+subscribe_links_summary.__doc__ = link_constants.LINK_SUBSCRIBE_DOC
+unsubscribe_links_summary.__doc__ = link_constants.LINK_UNSUBSCRIBE_DOC

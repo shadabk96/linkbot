@@ -38,7 +38,7 @@ def allow_only_direct_message():
         @wraps(func)
         def wrapper(message, *args, **kw):
             if not message.is_direct_message():
-                return message.reply("`Only direct messages are allowed`")
+                return message.reply("`Please send this as direct message to me!`")
             return func(message, *args, **kw)
 
         return wrapper
