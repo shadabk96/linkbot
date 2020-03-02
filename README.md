@@ -1,7 +1,17 @@
 # Linkbot
 
+## Summary
+
+* Linkbot aims to improve user workflow by organizing the links shared on Mattermost groups.
+* This would enhance user experience, encourage knowledge sharing and increase productivity. 
+* Linkbot silently listens to links posted on channels (it is a part of) and provides a unified view for quick access.
+* Supports searching links for a specific time period and/or search via tags.
+* Supports scheduling periodic aggregation of links (weekly/monthly) posted across channels in a team. 
+* With additional [linkbot-plugin](https://github.com/shadabk96/mattermost-linkbot-plugin), linkbot provides a clean UI to access the knowledge shared.
+
+## Features
+
 * Based on Mattermost [API(V4.0.0)](https://api.mattermost.com)
-* Simple plugins mechanism
 * Messages can be handled concurrently
 * Automatically reconnect to Mattermost when connection is lost
 * Python3 Support
@@ -12,12 +22,13 @@
 * Support for subscribing to periodic updates of links (daily/weekly/monthly)
 * Support for unsubcribing to periodic link updates
 * On bot start, support for auto updates of link aggregation for an already subscribed user
-* Support for display Link aggregation results with formatting and markdown
+* Support for displaying link aggregation results with formatting and markdown
 
 ## Setup
 
 * Clone this repository.
-* Create a .env file in cloned directory with following lines
+* Run `pip install -r requirements.txt` to install all required dependencies.
+* Edit .env file in cloned directory (optional)
 ```
 DATABASE_FILENAME=sqlite.db
 ```
@@ -55,6 +66,15 @@ SSL_VERIFY = False
 
 * Subscribe and unsubscribe demo
 ![Subscribe](demo/subs.gif)
+
+## Coming soon
+Due to the time constraints of the hackathon, we were not able to complete every functionality as planned. The development of this project is going on and more features will be added soon. 
+* Auto generation of tags 
+* Natural language search queries
+* Personalized feed for user based on his channels and interests
+* More options to subscribe. Eg: '--daily' '--weekly'
+* Search options in UI Plugin
+* Extending linkbot to files and images shared in the channel
 
 ## Authors
 
